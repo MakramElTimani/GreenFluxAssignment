@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenFluxAssignment", "GreenFluxAssignment\GreenFluxAssignment.csproj", "{99C5FDFE-2283-4402-A1DF-2A9460D96CA2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenFluxAssignment.Tests", "GreenFluxAssignment.Tests\GreenFluxAssignment.Tests.csproj", "{71989AF0-812B-4B94-B46C-9424F2C543C2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{99C5FDFE-2283-4402-A1DF-2A9460D96CA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99C5FDFE-2283-4402-A1DF-2A9460D96CA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99C5FDFE-2283-4402-A1DF-2A9460D96CA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99C5FDFE-2283-4402-A1DF-2A9460D96CA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71989AF0-812B-4B94-B46C-9424F2C543C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71989AF0-812B-4B94-B46C-9424F2C543C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71989AF0-812B-4B94-B46C-9424F2C543C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71989AF0-812B-4B94-B46C-9424F2C543C2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5B013A03-5D19-410F-88D0-91E3C671AB08}
+	EndGlobalSection
+EndGlobal
