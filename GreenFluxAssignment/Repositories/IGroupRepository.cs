@@ -8,13 +8,11 @@ public interface IGroupRepository
 
     Task<GroupDataModel?> GetGroupByIdAsync(Guid id);
 
-    Task<IEnumerable<GroupDataModel>> GetAllGroups();
+    Task<IEnumerable<GroupDataModel>> GetAllGroupsAsync();
 
     Task<GroupDataModel> UpdateGroupAsync(GroupDataModel group);
 
     Task<bool> DeleteGroupAsync(Guid id);
 
     Task<(bool Exists, int TotalCurrent, int MaxAllowedCurrent)> GetGroupCurrentLimitsAsync(Guid groupId);
-
-    Task<bool> Exists(Guid groupId);
 }

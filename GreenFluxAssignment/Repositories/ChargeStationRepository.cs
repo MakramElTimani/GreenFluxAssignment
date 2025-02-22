@@ -1,6 +1,8 @@
 ﻿using GreenFluxAssignment.Data;
 using GreenFluxAssignment.DTOs;
+using GreenFluxAssignment.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace GreenFluxAssignment.Repositories;
 
@@ -19,14 +21,14 @@ public class ChargeStationRepository : IChargeStationRepository
     {
         if (chargeStation.Connectors is null || !chargeStation.Connectors.Any())
         {
-            throw new ArgumentException("Charge station must have at least one connector.");
+            throw new ProblemException(HttpStatusCode.BadRequest, "Connectors Required", "Charge station must have at least one connector.");
         }
 
         var connectorsList = chargeStation.Connectors.ToList(); 
 
         if (connectorsList.Count > 5)
         {
-            throw new ArgumentException("Charge station cannot have more than 5 connectors.");
+            throw new ProblemException(HttpStatusCode.BadRequest, "Too Many Connectors","Charge station cannot have more than 5 connectors.");
         }
 
         // Assign unique IDs within the charge station context
@@ -40,9 +42,8 @@ public class ChargeStationRepository : IChargeStationRepository
         await _applicationDbContext.ChargeStations.AddAsync(chargeStation);
         if(await _applicationDbContext.SaveChangesAsync() == 0)
         {
-            //TODO: log error and customize exception
             _logger.LogError("Unexpected error occurred while saving creating a ChargeStation. Nothing was updated");
-            throw new Exception("Failed to save changes to the database");
+            throw new ProblemException(HttpStatusCode.UnprocessableEntity, "Unable to insert", "Failed to save changes to the database");
         }
         return chargeStation;
     }
@@ -61,7 +62,7 @@ public class ChargeStationRepository : IChargeStationRepository
         return true;
     }
 
-    public async Task<IEnumerable<ChargeStationDataModel>> GetAllChargeStationsOfGroup(Guid groupId)
+    public async Task<IEnumerable<ChargeStationDataModel>> GetAllChargeStationsOfGroupAsync(Guid groupId)
     {
         return await _applicationDbContext.ChargeStations
             .Include(c => c.Connectors)
@@ -82,7 +83,7 @@ public class ChargeStationRepository : IChargeStationRepository
         if (await _applicationDbContext.SaveChangesAsync() == 0)
         {
             _logger.LogError("An unexpected error occurred while updating a ChargeStation. Nothing was updated");
-            throw new Exception("Failed to save changes to the database"); //TODO: customize exception
+            throw new ProblemException(HttpStatusCode.UnprocessableEntity, "Unable to update", "Failed to save changes to the database");
         }
         return chargeStation;
     }

@@ -1,5 +1,7 @@
 ﻿using GreenFluxAssignment.Data;
+using GreenFluxAssignment.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace GreenFluxAssignment.Repositories;
 
@@ -14,7 +16,7 @@ public class ConnectorRepository : IConnectorRepository
         _logger = logger;
     }
 
-    public async Task<int> CountChargeStationConnectors(Guid chargeStationId)
+    public async Task<int> CountChargeStationConnectorsAsync(Guid chargeStationId)
     {
         return await _applicationDbContext.Connectors
             .CountAsync(c => c.ChargeStationId == chargeStationId);
@@ -26,7 +28,7 @@ public class ConnectorRepository : IConnectorRepository
         if (await _applicationDbContext.SaveChangesAsync() == 0)
         {
             _logger.LogError("Unexpected error occurred while saving creating a Connector. Nothing was updated");
-            throw new Exception("Failed to save changes to the database"); //TODO: customize exception
+            throw new ProblemException(HttpStatusCode.UnprocessableEntity, "Unable to insert", "Failed to save changes to the database");
         }
         return connector;
     }
@@ -62,7 +64,7 @@ public class ConnectorRepository : IConnectorRepository
         if (await _applicationDbContext.SaveChangesAsync() == 0)
         {
             _logger.LogError("Unexpected error occurred while saving updating a Connector. Nothing was updated");
-            throw new Exception("Failed to save changes to the database"); //TODO: customize exception
+            throw new ProblemException(HttpStatusCode.UnprocessableEntity, "Unable to update", "Failed to save changes to the database"); 
         }
         return connector;
     }

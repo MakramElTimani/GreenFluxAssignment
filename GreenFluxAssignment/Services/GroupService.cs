@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using GreenFluxAssignment.Data;
 using GreenFluxAssignment.DTOs;
+using GreenFluxAssignment.Exceptions;
 using GreenFluxAssignment.Repositories;
+using System.Net;
 
 namespace GreenFluxAssignment.Services;
 
@@ -16,8 +18,13 @@ public class GroupService : IGroupService
         _mapper = mapper;
     }
 
-    public async Task<GroupDto> CreateGroupAsync(GroupDto groupDto)
+    public async Task<GroupDto> CreateGroupAsync(CreateOrUpdateGroupDto groupDto)
     {
+        if (groupDto.CapacityInAmps <= 0)
+        {
+            throw new ProblemException(HttpStatusCode.BadRequest, "Invalid Capacity", "Group capacity must be greater than 0.");
+        }
+
         //map GroupDto to GroupDataModel
         var groupDataModel = _mapper.Map<GroupDataModel>(groupDto);
 
@@ -32,12 +39,15 @@ public class GroupService : IGroupService
 
     public async Task DeleteGroupAsync(Guid groupId)
     {
-        await _groupRepository.DeleteGroupAsync(groupId);
+        if (!await _groupRepository.DeleteGroupAsync(groupId))
+        {
+            throw new ProblemException(System.Net.HttpStatusCode.NotFound, "Group Not Found", "Could not delete Group because it was not found");
+        }
     }
 
     public async Task<IEnumerable<GroupDto>> GetAllGroupsAsync()
     {
-        var groupDataModels = await _groupRepository.GetAllGroups();
+        var groupDataModels = await _groupRepository.GetAllGroupsAsync();
         return _mapper.Map<List<GroupDto>>(groupDataModels);
     }
 
@@ -47,20 +57,25 @@ public class GroupService : IGroupService
         return _mapper.Map<GroupDto>(dataModel);
     }
 
-    public async Task<bool> Exists(Guid groupId)
+    public async Task<GroupDto?> UpdateGroupAsync(Guid groupId, CreateOrUpdateGroupDto groupDto)
     {
-        return await _groupRepository.Exists(groupId);
-    }
+        if (groupDto.CapacityInAmps <= 0)
+        {
+            throw new ProblemException(HttpStatusCode.BadRequest, "Invalid Capacity", "Group capacity must be greater than 0.");
+        }
 
-    public async Task<GroupDto?> UpdateGroupAsync(Guid groupId, GroupDto groupDto)
-    {
         // Get group by Id
-        GroupDataModel? groupDataModel = await _groupRepository.GetGroupByIdAsync(groupId);   
+        GroupDataModel? groupDataModel = await _groupRepository.GetGroupByIdAsync(groupId);
         if (groupDataModel is null)
         {
             return null;
         }
-        //TODO: Validate the group capacity
+        //Validate the group capacity
+        (_, int TotalCurrent, int MaxAllowedCurrent) = await GetGroupCurrentLimitsAsync(groupId);
+        if (TotalCurrent > groupDto.CapacityInAmps)
+        {
+            throw new ProblemException(System.Net.HttpStatusCode.BadRequest, "Invalid Capacity", "Group capacity cannot be less than the total current of the charge stations in the group.");
+        }
 
         // Update group properties
         groupDataModel.Name = groupDto.Name;

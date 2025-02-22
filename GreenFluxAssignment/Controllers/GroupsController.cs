@@ -38,7 +38,7 @@ public class GroupsController : ControllerBase
 
     // POST api/groups
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] GroupDto request)
+    public async Task<IActionResult> Post([FromBody] CreateOrUpdateGroupDto request)
     {
         var createdGroup = await _groupService.CreateGroupAsync(request);
         return CreatedAtAction(nameof(Get), new { id = createdGroup.Id }, createdGroup);
@@ -46,8 +46,10 @@ public class GroupsController : ControllerBase
 
     // PUT api/groups/5
     [HttpPut("{id}")]
-    public void Put(int id, [FromBody] string value)
+    public async Task<IActionResult> Put(Guid id, [FromBody] CreateOrUpdateGroupDto updateRequest)
     {
+        await _groupService.UpdateGroupAsync(id, updateRequest);
+        return NoContent();
     }
 
     // DELETE api/groups/5

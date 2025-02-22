@@ -35,15 +35,17 @@ public class ConnectorsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post(Guid chargeStationId, [FromBody] ConnectorDto connectorDto)
+    public async Task<IActionResult> Post(Guid chargeStationId, [FromBody] CreateOrUpdateConnectorDto connectorDto)
     {
         var createdConnector = await _connectorService.CreateConnector(chargeStationId, connectorDto);
         return CreatedAtAction(nameof(Get), new { chargeStationId, id = createdConnector.Id }, createdConnector);
     }
 
     [HttpPut("{id}")]
-    public void Put(int id, [FromBody] string value)
+    public async Task<IActionResult> Put(Guid chargeStationId, int id, [FromBody] CreateOrUpdateConnectorDto connectorDto)
     {
+        _ = await _connectorService.UpdateConnectorAsync(chargeStationId, id, connectorDto);
+        return NoContent();
     }
 
     [HttpDelete("{id}")]

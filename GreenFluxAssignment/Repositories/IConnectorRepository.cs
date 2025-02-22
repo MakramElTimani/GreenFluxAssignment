@@ -12,7 +12,7 @@ public interface IConnectorRepository
 
     Task<IEnumerable<ConnectorDataModel>> GetAllConnectorsOfChargeStation(Guid chargeStationId);
 
-    Task<int> CountChargeStationConnectors(Guid chargeStationId);
+    Task<int> CountChargeStationConnectorsAsync(Guid chargeStationId);
 
     Task<ConnectorDataModel> UpdateConnectorAsync(ConnectorDataModel connector);
 }

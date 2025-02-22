@@ -15,9 +15,9 @@ public class ConnectorService : IConnectorService
     private readonly IChargeStationService _chargeStationService;
     private readonly IGroupService _groupService;
 
-    public ConnectorService(IConnectorRepository connectorRepository, 
-        ILogger<ConnectorService> logger, 
-        IMapper mapper, 
+    public ConnectorService(IConnectorRepository connectorRepository,
+        ILogger<ConnectorService> logger,
+        IMapper mapper,
         IChargeStationService chargeStationService,
         IGroupService groupService)
     {
@@ -28,7 +28,7 @@ public class ConnectorService : IConnectorService
         _groupService = groupService;
     }
 
-    public async Task<ConnectorDto> CreateConnector(Guid chargeStationId, ConnectorDto connector)
+    public async Task<ConnectorDto> CreateConnector(Guid chargeStationId, CreateOrUpdateConnectorDto connector)
     {
         var chargeStation = await ValidateCapacity(chargeStationId, connector);
 
@@ -38,14 +38,19 @@ public class ConnectorService : IConnectorService
             throw new ProblemException(HttpStatusCode.UnprocessableEntity, "Charge Station Full", "Cannot create more than 5 connectors in a charge station");
         }
 
+        // check if the connector already exists
+        if (chargeStation.Connectors.Any(c => c.Id == connector.Id))
+        {
+            throw new ProblemException(HttpStatusCode.Conflict, "Connector Already Exists", "Connector with the same Id already exists");
+        }
+
         // map ConnectorDto to ConnectorDataModel
         var connectorDataModel = new ConnectorDataModel
         {
-            Id = chargeStation.Connectors.Count + 1,
+            Id = connector.Id,
             ChargeStationId = chargeStationId,
             MaxCurrentInAmps = connector.MaxCurrentInAmps,
         };
-
         // call repository to create connector
         ConnectorDataModel createdConnector = await _connectorRepository.CreateConnectorAsync(connectorDataModel);
 
@@ -54,18 +59,16 @@ public class ConnectorService : IConnectorService
 
     public async Task DeleteConnectorAsync(Guid chargeStationId, int id)
     {
-        int count = await _connectorRepository.CountChargeStationConnectors(chargeStationId);
-        
-        if(count == 1)
+        // check if the connector is the last connector of the charge station
+        int count = await _connectorRepository.CountChargeStationConnectorsAsync(chargeStationId);
+        if (count == 1)
         {
-           throw new InvalidOperationException("Cannot delete the last connector of a charge station");
+            throw new ProblemException(HttpStatusCode.BadRequest, "Not Allowed", "Cannot delete the last connector of a charge station");
         }
 
-        bool isDeleted = await _connectorRepository.DeleteConnectorAsync(chargeStationId, id);
-
-        if(!isDeleted)
+        if (!await _connectorRepository.DeleteConnectorAsync(chargeStationId, id))
         {
-            throw new InvalidOperationException("Unable to delete! Connector not found");
+            throw new ProblemException(HttpStatusCode.NotFound, "Not Found", "Unable to delete! Connector not found");
         }
     }
 
@@ -85,7 +88,7 @@ public class ConnectorService : IConnectorService
         return _mapper.Map<ConnectorDto>(dataModel);
     }
 
-    public async Task<ConnectorDto> UpdateConnectorAsync(Guid chargeStationId, int id, ConnectorDto connector)
+    public async Task<ConnectorDto> UpdateConnectorAsync(Guid chargeStationId, int id, CreateOrUpdateConnectorDto connector)
     {
         await ValidateCapacity(chargeStationId, connector);
 
@@ -103,15 +106,27 @@ public class ConnectorService : IConnectorService
         return _mapper.Map<ConnectorDto>(updatedConnector);
     }
 
-    private async Task<ChargeStationDto> ValidateCapacity(Guid chargeStationId, ConnectorDto connector)
+    /// <summary>
+    /// This method is used to validate the capacity of the group 
+    /// 1. Validates the Id of the connector
+    /// 2. Check if the charge station exists
+    /// 3. Get the group's total current and max allowed current
+    /// 4. Check if adding the connector's max current in amps to the group's total current exceeds the max allowed current
+    /// </summary>
+    /// <exception cref="ProblemException">If charge station is not found</exception>
+    /// <exception cref="ProblemException">If capacity is full for the group</exception>
+    private async Task<ChargeStationDto> ValidateCapacity(Guid chargeStationId, CreateOrUpdateConnectorDto connector)
     {
-        // TODO: Try to merge this into one query for better performance
+        if (connector.Id < 1 || connector.Id > 5)
+        {
+            throw new ProblemException(HttpStatusCode.BadRequest, "Invalid Connector Id", "Connector Id should be between 1 and 5");
+        }
 
         // get charge station
         var chargeStation = await _chargeStationService.GetChargeStationAsync(chargeStationId);
-        if(chargeStation is null)
+        if (chargeStation is null)
         {
-           throw new ProblemException(HttpStatusCode.NotFound, "Charge Station Not Found", "Charge Station not found");
+            throw new ProblemException(HttpStatusCode.NotFound, "Charge Station Not Found", "Charge Station not found");
         }
 
         // get group with total capacity

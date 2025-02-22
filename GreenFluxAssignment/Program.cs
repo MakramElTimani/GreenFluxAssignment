@@ -3,6 +3,7 @@ using GreenFluxAssignment.Data;
 using GreenFluxAssignment.Exceptions;
 using GreenFluxAssignment.Repositories;
 using GreenFluxAssignment.Services;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // add problem details for better problem responses
@@ -14,7 +15,10 @@ builder.Services.AddExceptionHandler<ProblemExceptionHandler>();
 // Add services to the container.
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-builder.Services.AddDbContext<ApplicationDbContext>();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlite("Data Source=app.db");
+});
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IChargeStationRepository, ChargeStationRepository>();
 builder.Services.AddScoped<IConnectorRepository, ConnectorRepository>();

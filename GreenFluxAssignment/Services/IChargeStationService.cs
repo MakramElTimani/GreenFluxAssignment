@@ -4,7 +4,7 @@ namespace GreenFluxAssignment.Services;
 
 public interface IChargeStationService
 {
-    Task<ChargeStationDto> CreateChargeStationAsync(Guid groupId, ChargeStationDto chargeStationDto);
+    Task<ChargeStationDto> CreateChargeStationAsync(Guid groupId, CreateChargeStationDto chargeStationDto);
 
     Task DeleteChargeStationAsync(Guid chargeStationId);
 
@@ -12,5 +12,5 @@ public interface IChargeStationService
 
     Task<ChargeStationDto?> GetChargeStationAsync(Guid chargeStationId);
 
-    Task<ChargeStationDto> UpdateChargeStationAsync(Guid chargeStationId, ChargeStationDto chargeStationDto);
+    Task<ChargeStationDto> UpdateChargeStationAsync(Guid chargeStationId, UpdateChargeStationDto chargeStationDto);
 }

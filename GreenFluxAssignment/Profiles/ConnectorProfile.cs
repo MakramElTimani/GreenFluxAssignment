@@ -9,8 +9,9 @@ namespace GreenFluxAssignment.Profiles
         public ConnectorProfile()
         {
             CreateMap<ConnectorDataModel, ConnectorDto>()
-                .ReverseMap()
-                .ForMember(dm => dm.Id, opt => opt.Ignore());
+                .ReverseMap();
+
+            CreateMap<CreateOrUpdateConnectorDto, ConnectorDataModel>();
         }
     }
 
@@ -21,6 +22,8 @@ namespace GreenFluxAssignment.Profiles
             CreateMap<ChargeStationDataModel, ChargeStationDto>()
                 .ReverseMap()
                 .ForMember(dm => dm.Id, opt => opt.Ignore());
+
+            CreateMap<CreateChargeStationDto, ChargeStationDataModel>();
         }
     }
 
@@ -31,6 +34,8 @@ namespace GreenFluxAssignment.Profiles
             CreateMap<GroupDataModel, GroupDto>()
                 .ReverseMap()
                 .ForMember(dm => dm.Id, opt => opt.Ignore());
+
+            CreateMap<CreateOrUpdateGroupDto, GroupDataModel>();
         }
     }
 }

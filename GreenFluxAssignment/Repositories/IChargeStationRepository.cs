@@ -11,7 +11,7 @@ public interface IChargeStationRepository
 
     Task<ChargeStationDataModel?> GetChargeStationByIdAsync(Guid id);
 
-    Task<IEnumerable<ChargeStationDataModel>> GetAllChargeStationsOfGroup(Guid groupId);
+    Task<IEnumerable<ChargeStationDataModel>> GetAllChargeStationsOfGroupAsync(Guid groupId);
 
     Task<ChargeStationDataModel> UpdateChargeStationAsync(ChargeStationDataModel chargeStation);
 }

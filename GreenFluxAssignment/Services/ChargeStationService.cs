@@ -21,20 +21,28 @@ public class ChargeStationService : IChargeStationService
         _mapper = mapper;
     }
 
-    public async Task<ChargeStationDto> CreateChargeStationAsync(Guid groupId, ChargeStationDto chargeStationDto)
+    public async Task<ChargeStationDto> CreateChargeStationAsync(Guid groupId, CreateChargeStationDto chargeStationDto)
     {
         if (chargeStationDto.Connectors.Count is < 1 or > 5)
         {
             throw new ProblemException(HttpStatusCode.BadRequest, "Invalid number of connectors", "Charge station must have between 1 and 5 connectors.");
         }
+        if (chargeStationDto.Connectors.Any(c => c.Id < 1 || c.Id > 5))
+        {
+            throw new ProblemException(HttpStatusCode.BadRequest, "Invalid Connector Id", "Connector Id must be between 1 and 5.");
+        }
+        if (chargeStationDto.Connectors.GroupBy(m => m.Id).Any(m => m.Count() > 1))
+        {
+            throw new ProblemException(HttpStatusCode.BadRequest, "Duplicate Connector Id", "Connector Ids must be unique.");
+        }
 
         // check sum of max current in amps for group and if group exists
         var groupCheck = await _groupService.GetGroupCurrentLimitsAsync(groupId);
-        if(!groupCheck.Exists)
+        if (!groupCheck.Exists)
         {
             throw new ProblemException(HttpStatusCode.NotFound, "Not Found", "Group does not exist.");
         }
-        if(groupCheck.TotalCurrent + chargeStationDto.Connectors.Sum(c => c.MaxCurrentInAmps) > groupCheck.MaxAllowedCurrent)
+        if (groupCheck.TotalCurrent + chargeStationDto.Connectors.Sum(c => c.MaxCurrentInAmps) > groupCheck.MaxAllowedCurrent)
         {
             throw new ProblemException(HttpStatusCode.BadRequest, "Exceeded Amps Capacity", $"Cannot add charge station. Total current in amps for group will exceed {groupCheck.MaxAllowedCurrent}.");
         }
@@ -51,12 +59,15 @@ public class ChargeStationService : IChargeStationService
 
     public async Task DeleteChargeStationAsync(Guid chargeStationId)
     {
-        await _chargeStationRepository.DeleteChargeStationAsync(chargeStationId);
+        if (!await _chargeStationRepository.DeleteChargeStationAsync(chargeStationId))
+        {
+            throw new ProblemException(HttpStatusCode.NotFound, "Charge Station Not Found", "Could not delete Charge Station becuase it was not found");
+        }
     }
 
     public async Task<IEnumerable<ChargeStationDto>> GetAllChargeStationsOfGroupAsync(Guid groupId)
     {
-        var dataModels = await _chargeStationRepository.GetAllChargeStationsOfGroup(groupId);
+        var dataModels = await _chargeStationRepository.GetAllChargeStationsOfGroupAsync(groupId);
         return _mapper.Map<IEnumerable<ChargeStationDto>>(dataModels);
     }
 
@@ -71,13 +82,8 @@ public class ChargeStationService : IChargeStationService
     }
 
 
-    public async Task<ChargeStationDto> UpdateChargeStationAsync(Guid chargeStationId, ChargeStationDto chargeStationDto)
+    public async Task<ChargeStationDto> UpdateChargeStationAsync(Guid chargeStationId, UpdateChargeStationDto updateChargeStationDto)
     {
-        if (chargeStationDto.Connectors.Count is < 1 or > 5)
-        {
-            throw new ProblemException(HttpStatusCode.BadRequest, "Invalid number of connectors", "Charge station must have between 1 and 5 connectors.");
-        }
-
         // get charge station
         var chargeStation = await GetChargeStationAsync(chargeStationId);
         if (chargeStation is null)
@@ -85,24 +91,13 @@ public class ChargeStationService : IChargeStationService
             throw new ProblemException(HttpStatusCode.NotFound, "Charge Station Not Found", "Charge Station not found");
         }
 
-        // check sum of max current in amps for group and if group exists
-        var groupCheck = await _groupService.GetGroupCurrentLimitsAsync(chargeStation.GroupId);
-        if (!groupCheck.Exists)
-        {
-            throw new ProblemException(HttpStatusCode.NotFound, "Not Found", "Group does not exist.");
-        }
-        if (groupCheck.TotalCurrent + chargeStationDto.Connectors.Sum(c => c.MaxCurrentInAmps) > groupCheck.MaxAllowedCurrent)
-        {
-            throw new ProblemException(HttpStatusCode.BadRequest, "Exceeded Amps Capacity", $"Cannot add charge station. Total current in amps for group will exceed {groupCheck.MaxAllowedCurrent}.");
-        }
-
         // map ChargeStationDto to ChargeStationDataModel
-        var chargeStationDataModel = _mapper.Map<ChargeStationDataModel>(chargeStationDto);
-        chargeStationDataModel.GroupId = chargeStation.GroupId;
+        var chargeStationDataModel = _mapper.Map<ChargeStationDataModel>(chargeStation);
+        chargeStationDataModel.Name = chargeStation.Name;
 
         // call repository to create charge station
-        ChargeStationDataModel createdChargeStation = await _chargeStationRepository.UpdateChargeStationAsync(chargeStationDataModel);
+        ChargeStationDataModel updatedChargeStation = await _chargeStationRepository.UpdateChargeStationAsync(chargeStationDataModel);
 
-        return _mapper.Map<ChargeStationDto>(createdChargeStation);
+        return _mapper.Map<ChargeStationDto>(updatedChargeStation);
     }
 }

@@ -1,5 +1,7 @@
 ﻿using GreenFluxAssignment.Data;
+using GreenFluxAssignment.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace GreenFluxAssignment.Repositories;
 
@@ -21,7 +23,7 @@ public class GroupRepository : IGroupRepository
         int response = await _applicationDbContext.SaveChangesAsync();
         if(response == 0)
         {
-            throw new DbUpdateException("Failed to save changes to the database");
+            throw new ProblemException(HttpStatusCode.UnprocessableEntity, "Unable to insert", "Failed to save changes to the database");
         }
 
         return entryEntity.Entity;
@@ -34,17 +36,12 @@ public class GroupRepository : IGroupRepository
 
         if(group is null)
         {
-            return true;
+            return false;
         }
 
         // remove the group
         _applicationDbContext.Groups.Remove(group);
         int response = await _applicationDbContext.SaveChangesAsync();
-
-        if(response == 0)
-        {
-            throw new DbUpdateException("Failed to save changes to the database");
-        }
         return true;
     }
 
@@ -55,7 +52,7 @@ public class GroupRepository : IGroupRepository
             .FirstOrDefaultAsync(g => g.Id == id);
     }
 
-    public async Task<IEnumerable<GroupDataModel>> GetAllGroups()
+    public async Task<IEnumerable<GroupDataModel>> GetAllGroupsAsync()
     {
         return await _applicationDbContext.Groups.ToListAsync();
     }
@@ -84,13 +81,8 @@ public class GroupRepository : IGroupRepository
         if(response == 0)
         {
             _logger.LogError("Unexpected error occurred while updating a Group. Nothing was updated");
-            throw new DbUpdateException("Failed to save changes to the database");
+            throw new ProblemException(HttpStatusCode.UnprocessableEntity, "Unable to update", "Failed to save changes to the database");
         }
         return group;
-    }
-
-    public async Task<bool> Exists(Guid groupId)
-    {
-        return await _applicationDbContext.Groups.AnyAsync(g => g.Id == groupId);
     }
 }

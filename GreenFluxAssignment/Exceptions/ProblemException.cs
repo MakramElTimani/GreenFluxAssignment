@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Data.Common;
 using System.Net;
 
 namespace GreenFluxAssignment.Exceptions;
@@ -16,6 +19,20 @@ public class ProblemException : Exception
         Error = error;
         StatusCode = (int)statusCode;
     }
+
+    public ProblemException(Exception exception) : base(exception.Message)
+    {
+        (int statusCode, string message) = exception switch
+        {
+            ArgumentException => ((int)HttpStatusCode.BadRequest, exception.Message),
+            InvalidOperationException => ((int)HttpStatusCode.BadRequest, exception.Message),
+            DbUpdateException => ((int)HttpStatusCode.UnprocessableEntity, "An error occurred while updating the database!"),
+            DbException => ((int)HttpStatusCode.UnprocessableEntity, "An error occurred while accessing the database!"),
+            _ => ((int)HttpStatusCode.InternalServerError, "An unexpected error occurred!")
+        };
+        Error = message;
+        StatusCode = statusCode;
+    }
 }
 
 public class ProblemExceptionHandler : IExceptionHandler
@@ -31,7 +48,7 @@ public class ProblemExceptionHandler : IExceptionHandler
     {
         if (exception is not ProblemException problemException)
         {
-            return true;
+            problemException = new ProblemException(exception);
         }
 
         var problemDetails = new ProblemDetails

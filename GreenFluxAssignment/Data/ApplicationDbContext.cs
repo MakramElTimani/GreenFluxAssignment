@@ -8,11 +8,6 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlite("Data Source=app.db");
-    }
-
     public DbSet<GroupDataModel> Groups { get; set; }
     public DbSet<ChargeStationDataModel> ChargeStations { get; set; }
     public DbSet<ConnectorDataModel> Connectors { get; set; }

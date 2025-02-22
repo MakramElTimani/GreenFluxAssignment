@@ -2,14 +2,17 @@
 
 namespace GreenFluxAssignment.DTOs;
 
-public class GroupDto
+public class CreateOrUpdateGroupDto
 {
-    public Guid Id { get; set; }
-
     [Required(AllowEmptyStrings = false)]
     public string Name { get; set; } = string.Empty;
 
     [Required]
     [Range(1, int.MaxValue)]
     public int CapacityInAmps { get; set; }
+}
+
+public class GroupDto : CreateOrUpdateGroupDto
+{
+    public Guid Id { get; set; }
 }

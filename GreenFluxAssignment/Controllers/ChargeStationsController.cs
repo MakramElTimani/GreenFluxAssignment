@@ -40,7 +40,7 @@ public class ChargeStationsController : ControllerBase
     /// Create a charge station for a Group
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Post(Guid groupId, [FromBody] ChargeStationDto request)
+    public async Task<IActionResult> Post(Guid groupId, [FromBody] CreateChargeStationDto request)
     {
         var createdChargeStation = await _chargeStationService.CreateChargeStationAsync(groupId, request);
         return CreatedAtAction(nameof(Get), new { groupId, id = createdChargeStation.Id }, createdChargeStation);
