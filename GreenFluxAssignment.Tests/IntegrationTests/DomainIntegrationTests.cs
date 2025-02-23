@@ -99,7 +99,7 @@ public class DomainIntegrationTests : IDisposable
 
         // 3. Try to Add 1 More Connectors (Should throw exception)
         await Assert.ThrowsAsync<ProblemException>(async () =>
-            await _connectorService.CreateConnector(createdChargeStation.Id, new CreateOrUpdateConnectorDto { MaxCurrentInAmps = 10 })
+            await _connectorService.CreateConnector(createdChargeStation.Id, new CreateConnectorDto { MaxCurrentInAmps = 10 })
         );
 
         // 4. Create Another Charge Station with 1 Connector
@@ -115,7 +115,7 @@ public class DomainIntegrationTests : IDisposable
 
         // 5. Try to Add Connector Exceeding Capacity (Should Throw Exception)
         await Assert.ThrowsAsync<ProblemException>(async () =>
-            await _connectorService.CreateConnector(createdChargeStation2.Id, new CreateOrUpdateConnectorDto { Id = 1, MaxCurrentInAmps = 50 })
+            await _connectorService.CreateConnector(createdChargeStation2.Id, new CreateConnectorDto { Id = 1, MaxCurrentInAmps = 50 })
         );
 
         // 6. Delete a connector from first charge station
@@ -130,7 +130,7 @@ public class DomainIntegrationTests : IDisposable
         );
 
         // 8. Delete First Charge Station and Validate Cascade Delete
-        await _chargeStationService.DeleteChargeStationAsync(createdChargeStation.Id);
+        await _chargeStationService.DeleteChargeStationAsync(createdGroup.Id, createdChargeStation.Id);
         Assert.Null(await _dbContext.ChargeStations.FindAsync(createdChargeStation.Id));
         Assert.Empty(await _dbContext.Connectors.Where(c => c.ChargeStationId == createdChargeStation.Id).ToListAsync());
 
@@ -159,7 +159,7 @@ public class DomainIntegrationTests : IDisposable
         await Assert.ThrowsAsync<ProblemException>(async () =>
         {
             // Create a Connector without a Charge Station
-            await _connectorService.CreateConnector(Guid.NewGuid(), new CreateOrUpdateConnectorDto { MaxCurrentInAmps = 10 });
+            await _connectorService.CreateConnector(Guid.NewGuid(), new CreateConnectorDto { MaxCurrentInAmps = 10 });
         });
     }
 
@@ -200,19 +200,19 @@ public class DomainIntegrationTests : IDisposable
 
         // 4. Add a new connector with different Id than deleted (Should throw exception)
         await Assert.ThrowsAsync<ProblemException>(async () =>
-            await _connectorService.CreateConnector(createdChargeStation.Id, new CreateOrUpdateConnectorDto { Id = 5, MaxCurrentInAmps = 10 })
+            await _connectorService.CreateConnector(createdChargeStation.Id, new CreateConnectorDto { Id = 5, MaxCurrentInAmps = 10 })
         );
 
         // 5. Add a new connector with invalid id (Should throw exception)
         await Assert.ThrowsAsync<ProblemException>(async () =>
-            await _connectorService.CreateConnector(createdChargeStation.Id, new CreateOrUpdateConnectorDto { Id = 6, MaxCurrentInAmps = 10 })
+            await _connectorService.CreateConnector(createdChargeStation.Id, new CreateConnectorDto { Id = 6, MaxCurrentInAmps = 10 })
         ); 
         await Assert.ThrowsAsync<ProblemException>(async () =>
-            await _connectorService.CreateConnector(createdChargeStation.Id, new CreateOrUpdateConnectorDto { Id = -1, MaxCurrentInAmps = 10 })
+            await _connectorService.CreateConnector(createdChargeStation.Id, new CreateConnectorDto { Id = -1, MaxCurrentInAmps = 10 })
         );
 
         // 6. Add a new connector with valid id
-        var newConnector = await _connectorService.CreateConnector(createdChargeStation.Id, new CreateOrUpdateConnectorDto { Id = 3, MaxCurrentInAmps = 10 });
+        var newConnector = await _connectorService.CreateConnector(createdChargeStation.Id, new CreateConnectorDto { Id = 3, MaxCurrentInAmps = 10 });
         Assert.NotNull(newConnector);
         Assert.Equal(3, newConnector.Id);
         Assert.Equal(10, newConnector.MaxCurrentInAmps);

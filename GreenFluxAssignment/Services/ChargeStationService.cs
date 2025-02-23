@@ -57,12 +57,19 @@ public class ChargeStationService : IChargeStationService
         return _mapper.Map<ChargeStationDto>(createdChargeStation);
     }
 
-    public async Task DeleteChargeStationAsync(Guid chargeStationId)
+    public async Task DeleteChargeStationAsync(Guid groupId, Guid chargeStationId)
     {
-        if (!await _chargeStationRepository.DeleteChargeStationAsync(chargeStationId))
+        var chargeStation = await _chargeStationRepository.GetChargeStationByIdAsync(chargeStationId);
+        if (chargeStation is null)
         {
-            throw new ProblemException(HttpStatusCode.NotFound, "Charge Station Not Found", "Could not delete Charge Station becuase it was not found");
+            throw new ProblemException(HttpStatusCode.NotFound, "Charge Station Not Found", "Charge Station not found");
         }
+        if (chargeStation.GroupId != groupId)
+        {
+            throw new ProblemException(HttpStatusCode.BadRequest, "Invalid Group", "Charge Station does not belong to the group");
+        }
+
+        await _chargeStationRepository.DeleteChargeStationAsync(chargeStation);
     }
 
     public async Task<IEnumerable<ChargeStationDto>> GetAllChargeStationsOfGroupAsync(Guid groupId)
@@ -71,29 +78,40 @@ public class ChargeStationService : IChargeStationService
         return _mapper.Map<IEnumerable<ChargeStationDto>>(dataModels);
     }
 
-    public async Task<ChargeStationDto?> GetChargeStationAsync(Guid chargeStationId)
+    public async Task<ChargeStationDto?> GetChargeStationAsync(Guid groupId, Guid chargeStationId)
     {
-        ChargeStationDataModel? dataModel = await _chargeStationRepository.GetChargeStationByIdAsync(chargeStationId);
-        if (dataModel is null)
+        ChargeStationDataModel? dataModel = await _chargeStationRepository.GetChargeStationByIdAsync(chargeStationId, includeConnectors: true);
+        if(dataModel is null || dataModel.GroupId != groupId)
         {
             return null;
         }
         return _mapper.Map<ChargeStationDto>(dataModel);
     }
 
+    public async Task<ChargeStationDto?> GetChargeStationByIdAsync(Guid chargeStationId)
+    {
+        ChargeStationDataModel? dataModel = await _chargeStationRepository.GetChargeStationByIdAsync(chargeStationId, includeConnectors: true);
+        if(dataModel is null)
+        {
+            return null;
+        }
+        return _mapper.Map<ChargeStationDto>(dataModel);
+    }
 
-    public async Task<ChargeStationDto> UpdateChargeStationAsync(Guid chargeStationId, UpdateChargeStationDto updateChargeStationDto)
+    public async Task<ChargeStationDto> UpdateChargeStationAsync(Guid groupId, Guid chargeStationId, UpdateChargeStationDto updateChargeStationDto)
     {
         // get charge station
-        var chargeStation = await GetChargeStationAsync(chargeStationId);
-        if (chargeStation is null)
+        var chargeStationDataModel = await _chargeStationRepository.GetChargeStationByIdAsync(chargeStationId);
+        if (chargeStationDataModel is null)
         {
             throw new ProblemException(HttpStatusCode.NotFound, "Charge Station Not Found", "Charge Station not found");
         }
+        if (chargeStationDataModel.GroupId != groupId)
+        {
+            throw new ProblemException(HttpStatusCode.BadRequest, "Invalid Group", "Charge Station does not belong to the group");
+        }
 
-        // map ChargeStationDto to ChargeStationDataModel
-        var chargeStationDataModel = _mapper.Map<ChargeStationDataModel>(chargeStation);
-        chargeStationDataModel.Name = chargeStation.Name;
+        chargeStationDataModel.Name = updateChargeStationDto.Name;
 
         // call repository to create charge station
         ChargeStationDataModel updatedChargeStation = await _chargeStationRepository.UpdateChargeStationAsync(chargeStationDataModel);

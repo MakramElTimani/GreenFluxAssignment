@@ -33,16 +33,10 @@ public class ConnectorRepository : IConnectorRepository
         return connector;
     }
 
-    public async Task<bool> DeleteConnectorAsync(Guid chargeStationId, int id)
+    public async Task DeleteConnectorAsync(ConnectorDataModel connector)
     {
-        var connector = await GetConnectorByIdAsync(chargeStationId, id);
-        if (connector is null)
-        {
-            return false;
-        }
         _applicationDbContext.Connectors.Remove(connector);
         await _applicationDbContext.SaveChangesAsync();
-        return true;
     }
 
     public async Task<IEnumerable<ConnectorDataModel>> GetAllConnectorsOfChargeStation(Guid chargeStationId)

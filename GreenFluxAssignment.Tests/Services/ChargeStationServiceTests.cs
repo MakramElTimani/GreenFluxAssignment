@@ -42,14 +42,14 @@ public class ChargeStationServiceTests
         var chargeStationDto = new CreateChargeStationDto
         {
             Name = "Charge Station 1",
-            Connectors = new List<CreateOrUpdateConnectorDto>
+            Connectors = new List<CreateConnectorDto>
             {
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     Id = 1,
                     MaxCurrentInAmps = 10
                 },
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     Id = 2,
                     MaxCurrentInAmps = 20
@@ -118,7 +118,7 @@ public class ChargeStationServiceTests
         };
         for (int i = 0; i < numberOfConnectors; i++)
         {
-            chargeStationDto.Connectors.Add(new CreateOrUpdateConnectorDto
+            chargeStationDto.Connectors.Add(new CreateConnectorDto
             {
                 MaxCurrentInAmps = 10
             });
@@ -141,13 +141,13 @@ public class ChargeStationServiceTests
         var chargeStationDto = new CreateChargeStationDto
         {
             Name = "Charge Station 1",
-            Connectors = new List<CreateOrUpdateConnectorDto>
+            Connectors = new List<CreateConnectorDto>
             {
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     MaxCurrentInAmps = 10
                 },
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     MaxCurrentInAmps = 20
                 }
@@ -174,13 +174,13 @@ public class ChargeStationServiceTests
         var chargeStationDto = new CreateChargeStationDto
         {
             Name = "Charge Station 1",
-            Connectors = new List<CreateOrUpdateConnectorDto>
+            Connectors = new List<CreateConnectorDto>
             {
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     MaxCurrentInAmps = 10
                 },
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     MaxCurrentInAmps = 20
                 }
@@ -207,14 +207,14 @@ public class ChargeStationServiceTests
         var chargeStationDto = new CreateChargeStationDto
         {
             Name = "Charge Station 1",
-            Connectors = new List<CreateOrUpdateConnectorDto>
+            Connectors = new List<CreateConnectorDto>
             {
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     Id = 6,
                     MaxCurrentInAmps = 10
                 },
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     Id = 1,
                     MaxCurrentInAmps = 20
@@ -242,14 +242,14 @@ public class ChargeStationServiceTests
         var chargeStationDto = new CreateChargeStationDto
         {
             Name = "Charge Station 1",
-            Connectors = new List<CreateOrUpdateConnectorDto>
+            Connectors = new List<CreateConnectorDto>
             {
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     Id = 1,
                     MaxCurrentInAmps = 10
                 },
-                new CreateOrUpdateConnectorDto
+                new CreateConnectorDto
                 {
                     Id = 1,
                     MaxCurrentInAmps = 20
@@ -301,13 +301,13 @@ public class ChargeStationServiceTests
             }
         };
 
-        _chargeStationRepositoryMock.Setup(x => x.GetChargeStationByIdAsync(It.IsAny<Guid>())).ReturnsAsync(chargeStationDataModel);
+        _chargeStationRepositoryMock.Setup(x => x.GetChargeStationByIdAsync(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(chargeStationDataModel);
         _chargeStationRepositoryMock.Setup(x => x.UpdateChargeStationAsync(It.IsAny<ChargeStationDataModel>())).ReturnsAsync(chargeStationDataModel);
 
         var chargeStationService = new ChargeStationService(_chargeStationRepositoryMock.Object, _groupServiceMock.Object, _mapper);
 
         // Act
-        var result = await chargeStationService.UpdateChargeStationAsync(chargeStationDataModel.Id, chargeStationDto);
+        var result = await chargeStationService.UpdateChargeStationAsync(chargeStationDataModel.GroupId, chargeStationDataModel.Id, chargeStationDto);
 
         // Assert
         Assert.NotNull(result);
@@ -335,12 +335,12 @@ public class ChargeStationServiceTests
             Name = "Charge Station 1"
         };
 
-        _chargeStationRepositoryMock.Setup(x => x.GetChargeStationByIdAsync(It.IsAny<Guid>())).ReturnsAsync((ChargeStationDataModel?)null);
+        _chargeStationRepositoryMock.Setup(x => x.GetChargeStationByIdAsync(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync((ChargeStationDataModel?)null);
 
         var chargeStationService = new ChargeStationService(_chargeStationRepositoryMock.Object, _groupServiceMock.Object, _mapper);
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<ProblemException>(() => chargeStationService.UpdateChargeStationAsync(Guid.NewGuid(), chargeStationDto));
+        await Assert.ThrowsAsync<ProblemException>(() => chargeStationService.UpdateChargeStationAsync(Guid.NewGuid(), Guid.NewGuid(), chargeStationDto));
     }
 }

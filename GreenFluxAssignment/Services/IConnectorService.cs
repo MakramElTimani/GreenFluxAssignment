@@ -4,7 +4,7 @@ namespace GreenFluxAssignment.Services;
 
 public interface IConnectorService
 {
-    Task<ConnectorDto> CreateConnector(Guid chargeStationId, CreateOrUpdateConnectorDto connector);
+    Task<ConnectorDto> CreateConnector(Guid chargeStationId, CreateConnectorDto connector);
 
     Task DeleteConnectorAsync(Guid chargeStationId, int id);
 
@@ -12,5 +12,5 @@ public interface IConnectorService
 
     Task<IEnumerable<ConnectorDto>> GetAllConnectorsOfChargeStationAsync(Guid chargeStationId);
 
-    Task<ConnectorDto> UpdateConnectorAsync(Guid chargeStationId, int id, CreateOrUpdateConnectorDto connector);
+    Task<ConnectorDto> UpdateConnectorAsync(Guid chargeStationId, int id, UpdateConnectorDto connector);
 }

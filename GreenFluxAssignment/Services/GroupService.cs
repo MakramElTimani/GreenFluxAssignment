@@ -39,10 +39,12 @@ public class GroupService : IGroupService
 
     public async Task DeleteGroupAsync(Guid groupId)
     {
-        if (!await _groupRepository.DeleteGroupAsync(groupId))
+        var group = await _groupRepository.GetGroupByIdAsync(groupId);
+        if (group is null)
         {
-            throw new ProblemException(System.Net.HttpStatusCode.NotFound, "Group Not Found", "Could not delete Group because it was not found");
+            throw new ProblemException(HttpStatusCode.NotFound, "Group Not Found", "Could not delete Group because it was not found");
         }
+        await _groupRepository.DeleteGroupAsync(group);
     }
 
     public async Task<IEnumerable<GroupDto>> GetAllGroupsAsync()
@@ -68,9 +70,9 @@ public class GroupService : IGroupService
         GroupDataModel? groupDataModel = await _groupRepository.GetGroupByIdAsync(groupId);
         if (groupDataModel is null)
         {
-            return null;
+            throw new ProblemException(HttpStatusCode.NotFound, "Group Not Found", "Could not update Group because it was not found");
         }
-        //Validate the group capacity
+        //Validate the group capacity. The new capacity should be greater than the total current of the charge stations in the group
         (_, int TotalCurrent, int MaxAllowedCurrent) = await GetGroupCurrentLimitsAsync(groupId);
         if (TotalCurrent > groupDto.CapacityInAmps)
         {

@@ -48,18 +48,10 @@ public class ChargeStationRepository : IChargeStationRepository
         return chargeStation;
     }
 
-    public async Task<bool> DeleteChargeStationAsync(Guid id)
+    public async Task DeleteChargeStationAsync(ChargeStationDataModel chargeStation)
     {
-        var chargeStation = await GetChargeStationByIdAsync(id);
-
-        if (chargeStation is null)
-        {
-            return false; // Return false if the entity wasn't found
-        }
-
         _applicationDbContext.ChargeStations.Remove(chargeStation);
         await _applicationDbContext.SaveChangesAsync();
-        return true;
     }
 
     public async Task<IEnumerable<ChargeStationDataModel>> GetAllChargeStationsOfGroupAsync(Guid groupId)
@@ -70,11 +62,14 @@ public class ChargeStationRepository : IChargeStationRepository
             .ToListAsync();
     }
 
-    public async Task<ChargeStationDataModel?> GetChargeStationByIdAsync(Guid id)
+    public async Task<ChargeStationDataModel?> GetChargeStationByIdAsync(Guid id, bool includeConnectors = false)
     {
-        return await _applicationDbContext.ChargeStations
-            .Include(c => c.Connectors)
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var query = _applicationDbContext.ChargeStations.AsQueryable();
+        if(includeConnectors)
+        {
+            query = query.Include(c => c.Connectors);
+        }
+        return await query.FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<ChargeStationDataModel> UpdateChargeStationAsync(ChargeStationDataModel chargeStation)

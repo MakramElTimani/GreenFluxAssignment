@@ -11,7 +11,7 @@ namespace GreenFluxAssignment.Profiles
             CreateMap<ConnectorDataModel, ConnectorDto>()
                 .ReverseMap();
 
-            CreateMap<CreateOrUpdateConnectorDto, ConnectorDataModel>();
+            CreateMap<CreateConnectorDto, ConnectorDataModel>();
         }
     }
 

@@ -12,7 +12,7 @@ public interface IGroupRepository
 
     Task<GroupDataModel> UpdateGroupAsync(GroupDataModel group);
 
-    Task<bool> DeleteGroupAsync(Guid id);
+    Task DeleteGroupAsync(GroupDataModel group);
 
     Task<(bool Exists, int TotalCurrent, int MaxAllowedCurrent)> GetGroupCurrentLimitsAsync(Guid groupId);
 }

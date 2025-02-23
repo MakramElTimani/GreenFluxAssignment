@@ -6,7 +6,7 @@ public interface IConnectorRepository
 {
     Task<ConnectorDataModel> CreateConnectorAsync(ConnectorDataModel connector);
 
-    Task<bool> DeleteConnectorAsync(Guid chargeStationId, int id);
+    Task DeleteConnectorAsync(ConnectorDataModel connector);
 
     Task<ConnectorDataModel?> GetConnectorByIdAsync(Guid chargeStationId, int id);
 

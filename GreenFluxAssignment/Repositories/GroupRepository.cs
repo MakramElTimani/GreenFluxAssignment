@@ -29,20 +29,10 @@ public class GroupRepository : IGroupRepository
         return entryEntity.Entity;
     }
 
-    public async Task<bool> DeleteGroupAsync(Guid id)
+    public async Task DeleteGroupAsync(GroupDataModel group)
     {
-        // get the group by id
-        var group = await GetGroupByIdAsync(id);
-
-        if(group is null)
-        {
-            return false;
-        }
-
-        // remove the group
         _applicationDbContext.Groups.Remove(group);
         int response = await _applicationDbContext.SaveChangesAsync();
-        return true;
     }
 
     public async Task<GroupDataModel?> GetGroupByIdAsync(Guid id)

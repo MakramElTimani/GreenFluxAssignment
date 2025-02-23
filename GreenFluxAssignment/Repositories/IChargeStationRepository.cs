@@ -7,9 +7,9 @@ public interface IChargeStationRepository
 {
     Task<ChargeStationDataModel> CreateChargeStationAsync(ChargeStationDataModel chargeStation);
 
-    Task<bool> DeleteChargeStationAsync(Guid id);
+    Task DeleteChargeStationAsync(ChargeStationDataModel chargeStation);
 
-    Task<ChargeStationDataModel?> GetChargeStationByIdAsync(Guid id);
+    Task<ChargeStationDataModel?> GetChargeStationByIdAsync(Guid id, bool includeConnectors = false);
 
     Task<IEnumerable<ChargeStationDataModel>> GetAllChargeStationsOfGroupAsync(Guid groupId);
 

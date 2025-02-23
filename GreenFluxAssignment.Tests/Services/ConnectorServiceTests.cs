@@ -27,7 +27,8 @@ public class ConnectorServiceTests
     public ConnectorServiceTests()
     {
         _connectorRepositoryMock = new Mock<IConnectorRepository>();
-        var config = new MapperConfiguration(cfg => {
+        var config = new MapperConfiguration(cfg =>
+        {
             cfg.AddProfile<GroupProfile>();
             cfg.AddProfile<ChargeStationProfile>();
             cfg.AddProfile<ConnectorProfile>();
@@ -44,7 +45,7 @@ public class ConnectorServiceTests
     public async Task CreateConnector_WhenCalled_ShouldReturnConnectorDto()
     {
         // Arrange
-        var connectorDto = new CreateOrUpdateConnectorDto
+        var connectorDto = new CreateConnectorDto
         {
             Id = 1,
             MaxCurrentInAmps = 10
@@ -57,7 +58,7 @@ public class ConnectorServiceTests
             MaxCurrentInAmps = connectorDto.MaxCurrentInAmps
         };
 
-        _chargeStationServiceMock.Setup(x => x.GetChargeStationAsync(It.IsAny<Guid>())).ReturnsAsync(new ChargeStationDto { Id = connectorDataModel.ChargeStationId });
+        _chargeStationServiceMock.Setup(x => x.GetChargeStationByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new ChargeStationDto { Id = connectorDataModel.ChargeStationId });
 
         _groupService.Setup(x => x.GetGroupCurrentLimitsAsync(It.IsAny<Guid>())).ReturnsAsync((true, 20, 100));
 
@@ -82,7 +83,7 @@ public class ConnectorServiceTests
     public async Task CreateConnector_WhenChargeStationHas5Connectors_ShouldThrowProblemException()
     {
         // Arrange
-        var connectorDto = new CreateOrUpdateConnectorDto
+        var connectorDto = new CreateConnectorDto
         {
             MaxCurrentInAmps = 10
         };
@@ -107,7 +108,7 @@ public class ConnectorServiceTests
             }
         };
 
-        _chargeStationServiceMock.Setup(x => x.GetChargeStationAsync(It.IsAny<Guid>())).ReturnsAsync(chargeStation);
+        _chargeStationServiceMock.Setup(x => x.GetChargeStationByIdAsync(It.IsAny<Guid>())).ReturnsAsync(chargeStation);
 
         var connectorService = new ConnectorService(_connectorRepositoryMock.Object, Mock.Of<ILogger<ConnectorService>>(), _mapper, _chargeStationServiceMock.Object, _groupService.Object);
 
@@ -122,7 +123,7 @@ public class ConnectorServiceTests
     public async Task CreateConnector_WhenGroupCurrentLimitExceeded_ShouldThrowProblemException()
     {
         // Arrange
-        var connectorDto = new CreateOrUpdateConnectorDto
+        var connectorDto = new CreateConnectorDto
         {
             MaxCurrentInAmps = 10
         };
@@ -146,7 +147,7 @@ public class ConnectorServiceTests
             }
         };
 
-        _chargeStationServiceMock.Setup(x => x.GetChargeStationAsync(It.IsAny<Guid>())).ReturnsAsync(chargeStation);
+        _chargeStationServiceMock.Setup(x => x.GetChargeStationByIdAsync(It.IsAny<Guid>())).ReturnsAsync(chargeStation);
 
         _groupService.Setup(x => x.GetGroupCurrentLimitsAsync(It.IsAny<Guid>())).ReturnsAsync((true, 41, 50));
 
@@ -163,9 +164,8 @@ public class ConnectorServiceTests
     public async Task UpdateConnector_WhenCalled_ShouldReturnConnectorDto()
     {
         // Arrange
-        var connectorDto = new CreateOrUpdateConnectorDto
-        {   
-            Id = 1,
+        var connectorDto = new UpdateConnectorDto
+        {
             MaxCurrentInAmps = 10
         };
 
@@ -176,10 +176,23 @@ public class ConnectorServiceTests
             MaxCurrentInAmps = connectorDto.MaxCurrentInAmps
         };
 
-        _chargeStationServiceMock.Setup(x => x.GetChargeStationAsync(It.IsAny<Guid>())).ReturnsAsync(new ChargeStationDto { Id = connectorDataModel.ChargeStationId });
+        _chargeStationServiceMock.Setup(x => x.GetChargeStationByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new ChargeStationDto
+            {
+                Id = connectorDataModel.ChargeStationId,
+                Connectors = [
+                    new() 
+                    {
+                        Id = 1,
+                        ChargeStationId = connectorDataModel.ChargeStationId,
+                        MaxCurrentInAmps = 5
+                    }
+                ]
+        });
 
         _groupService.Setup(x => x.GetGroupCurrentLimitsAsync(It.IsAny<Guid>())).ReturnsAsync((true, 20, 100));
 
+        _connectorRepositoryMock.Setup(x => x.GetConnectorByIdAsync(It.IsAny<Guid>(), It.IsAny<int>())).ReturnsAsync(connectorDataModel);
         _connectorRepositoryMock.Setup(x => x.UpdateConnectorAsync(It.IsAny<ConnectorDataModel>())).ReturnsAsync(connectorDataModel);
 
         var connectorService = new ConnectorService(_connectorRepositoryMock.Object, Mock.Of<ILogger<ConnectorService>>(), _mapper, _chargeStationServiceMock.Object, _groupService.Object);
@@ -201,7 +214,7 @@ public class ConnectorServiceTests
     public async Task UpdateConnector_WhenGroupCurrentLimitExceeded_ShouldThrowProblemException()
     {
         // Arrange
-        var connectorDto = new CreateOrUpdateConnectorDto
+        var connectorDto = new UpdateConnectorDto
         {
             MaxCurrentInAmps = 10
         };
@@ -225,7 +238,7 @@ public class ConnectorServiceTests
             }
         };
 
-        _chargeStationServiceMock.Setup(x => x.GetChargeStationAsync(It.IsAny<Guid>())).ReturnsAsync(chargeStation);
+        _chargeStationServiceMock.Setup(x => x.GetChargeStationByIdAsync(It.IsAny<Guid>())).ReturnsAsync(chargeStation);
 
         _groupService.Setup(x => x.GetGroupCurrentLimitsAsync(It.IsAny<Guid>())).ReturnsAsync((true, 41, 50));
 
