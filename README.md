@@ -38,4 +38,14 @@ dotnet run
 
 ### Project Description
 
-The API is a simple REST API that allows you to manage charge stations and charge points. The API has the following endpoints:
+The API is a simple REST API that allows you to manage groups, charge stations and connectors
+
+The database is a SQLite database that is created in the API directory and initialized using the dotnet ef database update command as described in the setup section
+
+For a given domain model exists the following classes:
+- DataModel which is the entity stored in the database
+- Repository which is used to interact with the database
+- Service which has the business logic and uses the repository to interact with the database
+- Controller which is the entry point for the API and uses the service to interact with the database
+- DTO which is the data transfer object used to transfer data between the API and the client
+- Mapper which is used to map between the DataModel and the DTO
