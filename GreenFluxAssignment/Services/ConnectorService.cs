@@ -144,7 +144,7 @@ public class ConnectorService : IConnectorService
         // check if the total current of the group is less than the max allowed current
         if (TotalCurrent + connectorMaxCurrentInAmps > MaxAllowedCurrent)
         {
-            throw new ProblemException(HttpStatusCode.UnprocessableEntity, "Group Capacity Exceeded", "Cannot add connector to charge station. Group capacity exceeded");
+            throw new ProblemException(HttpStatusCode.BadRequest, "Group Capacity Exceeded", "Cannot add connector to charge station. Group capacity exceeded");
         }
 
         return chargeStation;
